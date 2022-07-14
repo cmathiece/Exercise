@@ -1,0 +1,107 @@
+
+
+
+# Private Subnet EC2  for Application  servers such as Tomcat , Jboss, Weblogic
+# application servers will be hosted on private Ec2 instance.
+
+resource "aws_instance" "web_server_instance_1" {
+
+    ami                         = var.amis
+    instance_type               = var.instance_type
+    #subnet_id                   = var.pvt_snet_1
+    subnet_id                   = var.pub_snet_1
+    key_name                    = "key-for-ec2"
+    vpc_security_group_ids      = [
+                                  var.output_jump_ssh,
+                                  var.web_access_from_nat_prv_sg  # needs to be modified
+                                  
+    ]
+    tags                        = {
+        Name                    = "App  Instance 1"
+    }
+  
+}
+
+
+
+resource "aws_instance" "web_server_instance_2" {
+
+    ami                         = var.amis
+    instance_type               = var.instance_type
+    #subnet_id                   = var.pvt_snet_2
+    subnet_id                   = var.pub_snet_2
+    key_name                    = "key-for-ec2"
+    vpc_security_group_ids      = [
+                                  var.output_jump_ssh,
+                                  var.web_access_from_nat_prv_sg  # needs to be modified
+                                  
+    ]
+    tags                        = {
+        Name                    = "App  Instance 2"
+    }
+  
+}
+
+#-------------------
+resource "aws_instance" "app_server_instance_1" {
+
+    ami                         = var.amis
+    instance_type               = var.instance_type
+    subnet_id                   = var.pvt_snet_1
+    key_name                    = "key-for-ec2"
+    vpc_security_group_ids      = [
+                                  var.output_jump_ssh,
+                                  var.web_access_from_nat_prv_sg  # needs to be modified
+                                  
+    ]
+    tags                        = {
+        Name                    = "App  Instance 1"
+    }
+  
+}
+#-------------------
+resource "aws_instance" "app_server_instance_2" {
+
+    ami                         = var.amis
+    instance_type               = var.instance_type
+    subnet_id                   = var.pvt_snet_1
+    key_name                    = "key-for-ec2"
+    vpc_security_group_ids      = [
+                                  var.output_jump_ssh,
+                                  var.web_access_from_nat_prv_sg  # needs to be modified
+                                  
+    ]
+    tags                        = {
+        Name                    = "App  Instance 2"
+    }
+  
+}
+
+#----------------------------------------
+# create a Jump or Bastion  EC2 instnace to access other instnace which are in the private subnet
+
+resource "aws_instance" "jump-server" {
+
+    ami                         = var.amis
+    instance_type               = var.instance_type
+    subnet_id                   = var.pub_snet_1
+    associate_public_ip_address = true
+    key_name                    = "key-for-ec2"
+    vpc_security_group_ids      = [var.output_jump_ssh]
+
+    tags                        = {
+        Name = "Jump Server"
+    }
+ 
+    
+  
+}
+
+#create a static elastic IP  for Jump server
+
+resource "aws_eip" "jump_eip" {
+
+    instance                    = aws_instance.jump-server.id
+    vpc                         = true
+  
+}
